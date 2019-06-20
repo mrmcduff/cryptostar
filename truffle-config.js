@@ -22,7 +22,7 @@
  *
  */
 
-// const HDWallet = require('truffle-hdwallet-provider');
+const HDWalletProvider = require('truffle-hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
 //
 // const fs = require('fs');
@@ -54,6 +54,15 @@ module.exports = {
 
         develop: {
             port: 8545
+        },
+
+        rinkeby: {
+            provider: function () {
+                return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/v3/<INFURA_Access_Token>");
+            },
+            host: "127.0.0.1",
+            port: 8545,
+            network_id: 4
         },
         // Another network with more advanced options...
         // advanced: {
