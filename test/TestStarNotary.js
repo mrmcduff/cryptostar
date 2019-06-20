@@ -1,3 +1,4 @@
+const truffleAssert = require('truffle-assertions');
 const StarNotary = artifacts.require('StarNotary');
 
 let accounts;
@@ -74,27 +75,64 @@ it('lets user2 buy a star and decreases its balance in ether', async () => {
     assert.equal(value, starPrice);
 });
 
-// // Implement Task 2 Add supporting unit tests
-
 it('can add the star token name and star symbol properly', async () => {
     assert.equal(await instance.tokenName.call(), 'UStarTokens');
     assert.equal(await instance.tokenSymbol.call(), 'UST');
 });
 
-// it('lets 2 users exchange stars', async () => {
-//     // 1. create 2 Stars with different tokenId
-//     // 2. Call the exchangeStars functions implemented in the Smart Contract
-//     // 3. Verify that the owners changed
-// });
+it('prevents star exchange if one of the users is not the sender', async () => {
+    const user1 = accounts[1];
+    const user2 = accounts[2];
+    const user3 = accounts[3];
+    const tokenId1 = 6;
+    const tokenId2 = 7;
+    await instance.createStar('first star', tokenId1, { from: user1 });
+    await instance.createStar('second star', tokenId2, { from: user2 });
+    await truffleAssert.reverts(instance.exchangeStars(tokenId1, tokenId2, { from: user3 }),
+        'Only an owner can exchange a star');
+});
 
-// it('lets a user transfer a star', async () => {
-//     // 1. create a Star with different tokenId
-//     // 2. use the transferStar function implemented in the Smart Contract
-//     // 3. Verify the star owner changed.
-// });
+it('lets 2 users exchange stars', async () => {
+    const user1 = accounts[1];
+    const user2 = accounts[2];
+    const tokenId1 = 8;
+    const tokenId2 = 9;
+    await instance.createStar('first star', tokenId1, { from: user1 });
+    await instance.createStar('second star', tokenId2, { from: user2 });
 
-// it('lookUptokenIdToStarInfo test', async () => {
-//     // 1. create a Star with different tokenId
-//     // 2. Call your method lookUptokenIdToStarInfo
-//     // 3. Verify if you Star name is the same
-// });
+    await instance.exchangeStars(tokenId1, tokenId2, { from: user1 });
+    assert.equal(await instance.ownerOf.call(tokenId1), user2);
+    assert.equal(await instance.ownerOf.call(tokenId2), user1);
+
+    // Make sure that both user1 and user2 can exchange the values.
+    // Reversing the order to ensure that the owner of the second passed-in value
+    // (which is now user2) is also checked.
+    await instance.exchangeStars(tokenId2, tokenId1, { from: user2 });
+    assert.equal(await instance.ownerOf.call(tokenId1), user1);
+    assert.equal(await instance.ownerOf.call(tokenId2), user2);
+});
+
+it('lets a user transfer a star', async () => {
+    const user1 = accounts[1];
+    const user2 = accounts[2];
+    const tokenId = 10;
+    await instance.createStar('a transferrable star', tokenId, { from: user1 });
+
+    await instance.transferStar(user2, tokenId, { from: user1 });
+    assert.equal(await instance.ownerOf.call(tokenId), user2);
+});
+
+it('prevents someone who is not the owner from transferring a star', async () => {
+    const user1 = accounts[1];
+    const user2 = accounts[2];
+    const tokenId = 11;
+    await instance.createStar('a transferrable star', tokenId, { from: user1 });
+    await truffleAssert.reverts(instance.transferStar(user2, tokenId, { from: user2 }), 'Only the owner can transfer a star');
+});
+
+it('lookUptokenIdToStarInfo test', async () => {
+    const user4 = accounts[4];
+    const tokenId = 12;
+    await instance.createStar('lookup', tokenId, { from: user4 });
+    assert.equal(await instance.lookUptokenIdToStarInfo(tokenId), 'lookup');
+});

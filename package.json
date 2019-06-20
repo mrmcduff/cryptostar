@@ -11,7 +11,9 @@
     "truffle-hdwallet-provider": "^1.0.10",
     "yaeti": "^1.0.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "truffle-assertions": "^0.9.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
