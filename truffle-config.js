@@ -25,8 +25,9 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
 //
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+const fs = require('fs');
+const mnemonic = fs.readFileSync('.mnemonic').toString().trim();
+const infuraKey = fs.readFileSync('.infurakey').toString().trim();
 
 module.exports = {
     /**
@@ -58,11 +59,13 @@ module.exports = {
 
         rinkeby: {
             provider: function () {
-                return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/v3/<INFURA_Access_Token>");
+                return new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${infuraKey}`);
             },
             host: "127.0.0.1",
             port: 8545,
-            network_id: 4
+            network_id: 4,
+            gas: 4500000,           // Gas sent with each transaction (default: ~6700000)
+            gasPrice: 10000000000,  // 10 gwei (in wei) (default: 100 gwei)
         },
         // Another network with more advanced options...
         // advanced: {
